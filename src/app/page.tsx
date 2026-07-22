@@ -23,6 +23,7 @@ export default function HomePage() {
 
   const [weeklyGridData, setWeeklyGridData] = useState<Record<DayOfWeek, ResolvedSlot[]> | undefined>(undefined);
   const [courses, setCourses] = useState<{ code: string; title: string; staffName: string }[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Dialog states
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
@@ -58,6 +59,7 @@ export default function HomePage() {
 
   const loadTimetable = useCallback(async () => {
     if (!selectedDate) return;
+    setIsLoading(true);
 
     try {
       const resSingle = await fetch(`/api/timetable?date=${selectedDate}&mode=single`);
@@ -77,6 +79,8 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error('Error fetching timetable:', err);
+    } finally {
+      setIsLoading(false);
     }
   }, [selectedDate]);
 
@@ -131,6 +135,7 @@ export default function HomePage() {
           onDragDropShift={handleDragDropShift}
           selectedDate={selectedDate || getTodayIST()}
           onDateChange={setSelectedDate}
+          isLoading={isLoading}
         />
 
         {/* Collapsible Course Legend */}
