@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (isPermanent) {
-      // Update Master Slots directly
+      // Update Master Slots directly and clean up existing temporary overrides for these slots
       for (const slot of slots) {
         await MasterSlot.findOneAndUpdate(
           { dayOfWeek: slot.dayOfWeek, periodNumber: slot.periodNumber },
@@ -57,6 +57,12 @@ export async function POST(req: NextRequest) {
           },
           { upsert: true, new: true }
         );
+
+        // Delete active temporary overrides for this master slot
+        await SlotOverride.deleteMany({
+          dayOfWeek: slot.dayOfWeek,
+          periodNumber: slot.periodNumber,
+        });
       }
 
       return NextResponse.json({
@@ -77,6 +83,25 @@ export async function POST(req: NextRequest) {
     const batchId = `batch_${Date.now()}`;
 
     for (const slot of slots) {
+      // Delete existing temporary overrides for this exact day & period on specificDate or date range
+      if (recurrenceType === 'single_date') {
+        await SlotOverride.deleteMany({
+          dayOfWeek: slot.dayOfWeek,
+          periodNumber: slot.periodNumber,
+          recurrenceType: 'single_date',
+          specificDate,
+        });
+      } else {
+        await SlotOverride.deleteMany({
+          dayOfWeek: slot.dayOfWeek,
+          periodNumber: slot.periodNumber,
+          recurrenceType: { $in: ['single_week', 'repeat_until_date'] },
+          startDate,
+          endDate,
+        });
+      }
+
+      // Create new fresh override
       await SlotOverride.create({
         dayOfWeek: slot.dayOfWeek,
         periodNumber: slot.periodNumber,
@@ -94,7 +119,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Successfully created ${slots.length} temporary/recurring slot override(s).`,
+      message: `Successfully updated ${slots.length} temporary/recurring slot override(s).`,
       batchId,
     });
   } catch (error: unknown) {

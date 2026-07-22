@@ -33,8 +33,8 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
   // Fetch Master Slots for this day
   const masterSlots = await MasterSlot.find({ dayOfWeek }).lean();
 
-  // Fetch Overrides for this day
-  const rawOverrides = await SlotOverride.find({ dayOfWeek }).lean();
+  // Fetch Overrides for this day, sorted newest first
+  const rawOverrides = await SlotOverride.find({ dayOfWeek }).sort({ createdAt: -1 }).lean();
 
   // Filter overrides active on dateStr
   const activeOverrides = rawOverrides.filter((ov) => {
@@ -61,20 +61,22 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
   });
 
   const resolvedSlots: ResolvedSlot[] = PERIODS.map((period) => {
+    // Pick the most recent active override for this period
     const override = activeOverrides.find((o) => o.periodNumber === period.number);
 
     if (override) {
-      const cInfo = courseMap[override.courseCode] || {
-        title: override.courseCode,
+      const courseCodeUpper = override.courseCode.trim().toUpperCase();
+      const cInfo = courseMap[courseCodeUpper] || {
+        title: courseCodeUpper,
         staffName: override.staffName || '',
-        type: 'theory' as const,
+        type: (courseCodeUpper === 'LIB' || courseCodeUpper === 'TWM' ? 'free' : courseCodeUpper === '23N710' || courseCodeUpper === '23N711' ? 'lab' : 'theory') as 'free' | 'lab' | 'theory',
       };
 
       return {
         periodNumber: period.number,
         time: period.time,
         dayOfWeek,
-        courseCode: override.courseCode,
+        courseCode: courseCodeUpper,
         courseTitle: cInfo.title,
         staffName: override.staffName || cInfo.staffName,
         venue: override.venue,
@@ -93,17 +95,18 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
 
     const masterSlot = masterSlots.find((m) => m.periodNumber === period.number);
     if (masterSlot) {
-      const cInfo = courseMap[masterSlot.courseCode] || {
-        title: masterSlot.courseCode,
+      const courseCodeUpper = masterSlot.courseCode.trim().toUpperCase();
+      const cInfo = courseMap[courseCodeUpper] || {
+        title: courseCodeUpper,
         staffName: masterSlot.staffName || '',
-        type: 'theory' as const,
+        type: (courseCodeUpper === 'LIB' || courseCodeUpper === 'TWM' ? 'free' : courseCodeUpper === '23N710' || courseCodeUpper === '23N711' ? 'lab' : 'theory') as 'free' | 'lab' | 'theory',
       };
 
       return {
         periodNumber: period.number,
         time: period.time,
         dayOfWeek,
-        courseCode: masterSlot.courseCode,
+        courseCode: courseCodeUpper,
         courseTitle: cInfo.title,
         staffName: masterSlot.staffName || cInfo.staffName,
         venue: masterSlot.venue,
@@ -117,7 +120,7 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
       time: period.time,
       dayOfWeek,
       courseCode: '',
-      courseTitle: 'Free Slot',
+      courseTitle: 'Empty Slot',
       staffName: '',
       venue: '',
       type: 'free' as const,
@@ -142,7 +145,6 @@ export async function resolveFullWeeklyGrid(dateStr: string) {
     FRI: [],
   };
 
-  // Find Monday of the current week for dateStr in IST
   const targetDay = getDayOfWeekIST(dateStr);
   const dayIndexMap: Record<DayOfWeek, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4 };
   const targetIndex = dayIndexMap[targetDay] || 0;
