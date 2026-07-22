@@ -3,6 +3,7 @@ export interface PeriodInfo {
   time: string;
 }
 
+// 8 Active Periods (8:30 AM - 5:10 PM)
 export const PERIODS: PeriodInfo[] = [
   { number: 1, time: "8.30 - 9.20" },
   { number: 2, time: "9.20 - 10.10" },
@@ -12,10 +13,6 @@ export const PERIODS: PeriodInfo[] = [
   { number: 6, time: "2.30 - 3.20" },
   { number: 7, time: "3.30 - 4.20" },
   { number: 8, time: "4.20 - 5.10" },
-  { number: 9, time: "5.30 - 6.20" },
-  { number: 10, time: "6.20 - 7.10" },
-  { number: 11, time: "7.15 - 8.05" },
-  { number: 12, time: "8.05 - 8.55" },
 ];
 
 export const DAYS_OF_WEEK = ["MON", "TUE", "WED", "THU", "FRI"] as const;

@@ -14,7 +14,7 @@ export interface IMasterSlot extends Document {
 const MasterSlotSchema = new Schema<IMasterSlot>(
   {
     dayOfWeek: { type: String, enum: ['MON', 'TUE', 'WED', 'THU', 'FRI'], required: true },
-    periodNumber: { type: Number, required: true, min: 1, max: 12 },
+    periodNumber: { type: Number, required: true, min: 1, max: 8 },
     courseCode: { type: String, required: true, trim: true },
     venue: { type: String, default: '', trim: true },
     staffName: { type: String, default: '', trim: true },

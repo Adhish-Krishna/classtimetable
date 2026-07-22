@@ -7,9 +7,9 @@ export interface ISlotOverride extends Document {
   dayOfWeek: DayOfWeek;
   periodNumber: number;
   recurrenceType: RecurrenceType;
-  specificDate?: string; // YYYY-MM-DD
-  startDate?: string;    // YYYY-MM-DD
-  endDate?: string;      // YYYY-MM-DD
+  specificDate?: string;
+  startDate?: string;
+  endDate?: string;
   courseCode: string;
   venue: string;
   staffName: string;
@@ -22,7 +22,7 @@ export interface ISlotOverride extends Document {
 const SlotOverrideSchema = new Schema<ISlotOverride>(
   {
     dayOfWeek: { type: String, enum: ['MON', 'TUE', 'WED', 'THU', 'FRI'], required: true },
-    periodNumber: { type: Number, required: true, min: 1, max: 12 },
+    periodNumber: { type: Number, required: true, min: 1, max: 8 },
     recurrenceType: {
       type: String,
       enum: ['single_date', 'single_week', 'repeat_until_date'],
