@@ -6,14 +6,13 @@ import TimetableGrid from '@/components/TimetableGrid';
 import CourseLegend from '@/components/CourseLegend';
 import BatchEditDialog from '@/components/BatchEditDialog';
 import AdminRepDialog from '@/components/AdminRepDialog';
+import DragConfirmDialog from '@/components/DragConfirmDialog';
 import { ResolvedSlot } from '@/lib/timetable-resolver';
 import { DayOfWeek } from '@/lib/constants';
+import { getTodayIST } from '@/lib/date-utils';
 
 export default function HomePage() {
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
-
+  const [selectedDate, setSelectedDate] = useState<string>('');
   const [user, setUser] = useState<{ username: string; role: 'admin' | 'rep' } | null>(null);
   
   const [singleDayData, setSingleDayData] = useState<{
@@ -25,16 +24,25 @@ export default function HomePage() {
   const [weeklyGridData, setWeeklyGridData] = useState<Record<DayOfWeek, ResolvedSlot[]> | undefined>(undefined);
   const [courses, setCourses] = useState<{ code: string; title: string; staffName: string }[]>([]);
 
+  // Dialog states
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const [isBatchEditDialogOpen, setIsBatchEditDialogOpen] = useState(false);
   const [selectedSlotForEdit, setSelectedSlotForEdit] = useState<ResolvedSlot | null>(null);
 
-  // Initialize seed & user profile
+  // Drag-and-Drop Shift Dialog state
+  const [isDragDialogOpen, setIsDragDialogOpen] = useState(false);
+  const [dragSourceSlot, setDragSourceSlot] = useState<ResolvedSlot | null>(null);
+  const [dragTargetSlot, setDragTargetSlot] = useState<ResolvedSlot | null>(null);
+
+  // Set IST Date on mount
   useEffect(() => {
-    // Call seed
+    setSelectedDate(getTodayIST());
+  }, []);
+
+  // Initialize seed, user profile, and course catalog
+  useEffect(() => {
     fetch('/api/seed').catch(() => {});
 
-    // Fetch user
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
@@ -42,7 +50,6 @@ export default function HomePage() {
       })
       .catch(() => {});
 
-    // Fetch courses
     fetch('/api/courses')
       .then((res) => res.json())
       .then((data) => {
@@ -53,8 +60,9 @@ export default function HomePage() {
 
   // Fetch timetable data for selectedDate
   const loadTimetable = useCallback(async () => {
+    if (!selectedDate) return;
+
     try {
-      // Single day
       const resSingle = await fetch(`/api/timetable?date=${selectedDate}&mode=single`);
       const dataSingle = await resSingle.json();
       if (dataSingle.success) {
@@ -65,7 +73,6 @@ export default function HomePage() {
         });
       }
 
-      // Weekly grid
       const resWeek = await fetch(`/api/timetable?date=${selectedDate}&mode=week`);
       const dataWeek = await resWeek.json();
       if (dataWeek.success) {
@@ -96,39 +103,47 @@ export default function HomePage() {
     setIsBatchEditDialogOpen(true);
   };
 
+  const handleDragDropShift = (source: ResolvedSlot, target: ResolvedSlot) => {
+    setDragSourceSlot(source);
+    setDragTargetSlot(target);
+    setIsDragDialogOpen(true);
+  };
+
   const canEdit = !!user && (user.role === 'admin' || user.role === 'rep');
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans">
-      {/* Header Navigation */}
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
+      {/* Navbar Header */}
       <Navbar
         user={user}
-        selectedDate={selectedDate}
+        selectedDate={selectedDate || getTodayIST()}
         onDateChange={setSelectedDate}
         onLogout={handleLogout}
         onOpenAdminDialog={() => setIsAdminDialogOpen(true)}
         onOpenBatchEdit={handleOpenNewBatchEdit}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Main Content */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Banner for Class Reps & Admins */}
         {canEdit && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-950 to-purple-950 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 border border-indigo-800/50">
+          <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-white shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-0.5 text-center sm:text-left">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-300">
-                Logged in as {user?.role.toUpperCase()} ({user?.username})
-              </span>
-              <h2 className="text-base font-bold">Timetable Management Mode Active</h2>
-              <p className="text-xs text-indigo-200">
-                Click any slot card below or use &quot;Shift / Edit Schedule&quot; to perform single-date, weekly, or permanent timetable updates.
+              <div className="flex items-center gap-2 justify-center sm:justify-start">
+                <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">
+                  {user?.role.toUpperCase()}: {user?.username}
+                </span>
+                <span className="text-xs text-zinc-400 font-semibold">Rep Shift Mode Active</span>
+              </div>
+              <p className="text-xs text-zinc-400">
+                Drag & drop any period card below or click &quot;Batch Shift&quot; to swap or reassign classes.
               </p>
             </div>
             <button
               onClick={handleOpenNewBatchEdit}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-indigo-950 hover:bg-indigo-50 shadow-sm shrink-0 transition"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-zinc-950 hover:bg-zinc-200 transition shrink-0"
             >
-              Shift / Edit Schedule
+              Batch Shift / Edit
             </button>
           </div>
         )}
@@ -139,7 +154,8 @@ export default function HomePage() {
           weeklyGridData={weeklyGridData}
           canEdit={canEdit}
           onEditSlot={handleOpenEditSlot}
-          selectedDate={selectedDate}
+          onDragDropShift={handleDragDropShift}
+          selectedDate={selectedDate || getTodayIST()}
           onDateChange={setSelectedDate}
         />
 
@@ -148,23 +164,32 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-6 text-center text-xs text-slate-500">
-        <p>BE CSE (AI & ML) Semester 7 • Digital Timetable Platform</p>
+      <footer className="border-t border-zinc-900 bg-zinc-950 py-6 text-center text-xs text-zinc-500">
+        <p>BE CSE (AI & ML) Semester 7 • Digital Timetable Platform (IST)</p>
       </footer>
 
-      {/* Modals */}
+      {/* Modals & Dialogs */}
       <BatchEditDialog
         isOpen={isBatchEditDialogOpen}
         onClose={() => setIsBatchEditDialogOpen(false)}
         initialSlot={selectedSlotForEdit}
         courses={courses}
         onSaveSuccess={loadTimetable}
-        selectedDate={selectedDate}
+        selectedDate={selectedDate || getTodayIST()}
       />
 
       <AdminRepDialog
         isOpen={isAdminDialogOpen}
         onClose={() => setIsAdminDialogOpen(false)}
+      />
+
+      <DragConfirmDialog
+        isOpen={isDragDialogOpen}
+        onClose={() => setIsDragDialogOpen(false)}
+        sourceSlot={dragSourceSlot}
+        targetSlot={dragTargetSlot}
+        selectedDate={selectedDate || getTodayIST()}
+        onSaveSuccess={loadTimetable}
       />
     </div>
   );

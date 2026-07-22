@@ -95,7 +95,6 @@ export default function BatchEditDialog({
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
       
-      // Auto populate staff name if course changes
       if (field === 'courseCode') {
         const found = courses.find((c) => c.code === value);
         if (found) {
@@ -142,33 +141,33 @@ export default function BatchEditDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs overflow-y-auto font-sans">
+      <div className="relative w-full max-w-2xl bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-800 p-6 my-8 text-zinc-100">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+            <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-base font-bold text-white">
                 {initialSlot ? `Edit Slot P${initialSlot.periodNumber} (${initialSlot.dayOfWeek})` : 'Batch Shift / Update Classes'}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Modify venue, course, or period slots permanently or temporarily.
+              <p className="text-xs text-zinc-400">
+                Modify venue, course, or period slots permanently or temporarily
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-900 transition"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+          <div className="mt-4 p-3 rounded-xl bg-red-950/40 border border-red-800/60 text-xs text-red-300 flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -176,8 +175,8 @@ export default function BatchEditDialog({
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           {/* Scope & Recurrence Selection */}
-          <div className="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800">
-            <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
+          <div className="space-y-3 p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+            <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400 block">
               1. Change Duration & Recurrence Mode
             </label>
 
@@ -186,10 +185,10 @@ export default function BatchEditDialog({
               <button
                 type="button"
                 onClick={() => setIsPermanent(false)}
-                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition text-center ${
+                className={`py-2 px-3 rounded-xl text-xs font-bold border transition text-center ${
                   !isPermanent
-                    ? 'bg-indigo-600 text-white border-transparent shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800'
+                    ? 'bg-white text-zinc-950 border-white shadow-xs'
+                    : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-zinc-200'
                 }`}
               >
                 Temporary / Override
@@ -197,10 +196,10 @@ export default function BatchEditDialog({
               <button
                 type="button"
                 onClick={() => setIsPermanent(true)}
-                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition text-center ${
+                className={`py-2 px-3 rounded-xl text-xs font-bold border transition text-center ${
                   isPermanent
-                    ? 'bg-indigo-600 text-white border-transparent shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800'
+                    ? 'bg-white text-zinc-950 border-white shadow-xs'
+                    : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-zinc-200'
                 }`}
               >
                 Permanent (Master Schedule)
@@ -214,10 +213,10 @@ export default function BatchEditDialog({
                   <button
                     type="button"
                     onClick={() => setRecurrenceType('single_date')}
-                    className={`p-2 rounded-xl text-[11px] font-semibold border text-center transition ${
+                    className={`p-2 rounded-lg text-xs font-semibold border text-center transition ${
                       recurrenceType === 'single_date'
-                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40 font-bold'
-                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+                        ? 'bg-zinc-800 text-white border-zinc-700 font-bold'
+                        : 'bg-zinc-950 text-zinc-400 border-zinc-800'
                     }`}
                   >
                     Single Specific Date
@@ -225,10 +224,10 @@ export default function BatchEditDialog({
                   <button
                     type="button"
                     onClick={() => setRecurrenceType('single_week')}
-                    className={`p-2 rounded-xl text-[11px] font-semibold border text-center transition ${
+                    className={`p-2 rounded-lg text-xs font-semibold border text-center transition ${
                       recurrenceType === 'single_week'
-                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40 font-bold'
-                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+                        ? 'bg-zinc-800 text-white border-zinc-700 font-bold'
+                        : 'bg-zinc-950 text-zinc-400 border-zinc-800'
                     }`}
                   >
                     Single Week Only
@@ -236,26 +235,26 @@ export default function BatchEditDialog({
                   <button
                     type="button"
                     onClick={() => setRecurrenceType('repeat_until_date')}
-                    className={`p-2 rounded-xl text-[11px] font-semibold border text-center transition ${
+                    className={`p-2 rounded-lg text-xs font-semibold border text-center transition ${
                       recurrenceType === 'repeat_until_date'
-                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40 font-bold'
-                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+                        ? 'bg-zinc-800 text-white border-zinc-700 font-bold'
+                        : 'bg-zinc-950 text-zinc-400 border-zinc-800'
                     }`}
                   >
                     Repeat Until Date
                   </button>
                 </div>
 
-                {/* Date Inputs based on Recurrence */}
+                {/* Date Inputs */}
                 {recurrenceType === 'single_date' && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
-                    <span className="text-xs text-slate-600 dark:text-slate-400">Target Date:</span>
+                    <Calendar className="h-4 w-4 text-zinc-400 shrink-0" />
+                    <span className="text-xs text-zinc-300">Target Date:</span>
                     <input
                       type="date"
                       value={specificDate}
                       onChange={(e) => setSpecificDate(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                      className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-mono font-semibold text-white"
                     />
                   </div>
                 )}
@@ -263,21 +262,21 @@ export default function BatchEditDialog({
                 {(recurrenceType === 'single_week' || recurrenceType === 'repeat_until_date') && (
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-600 dark:text-slate-400">Start Date:</span>
+                      <span className="text-xs text-zinc-300">Start Date:</span>
                       <input
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-mono font-semibold text-white"
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-600 dark:text-slate-400">End Date:</span>
+                      <span className="text-xs text-zinc-300">End Date:</span>
                       <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-mono font-semibold text-white"
                       />
                     </div>
                   </div>
@@ -289,13 +288,13 @@ export default function BatchEditDialog({
           {/* Slot Edits List */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
                 2. Slot Changes ({slotsToEdit.length})
               </label>
               <button
                 type="button"
                 onClick={handleAddSlot}
-                className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="flex items-center gap-1 text-xs font-bold text-white hover:underline"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Class Shift</span>
@@ -306,17 +305,17 @@ export default function BatchEditDialog({
               {slotsToEdit.map((slot, index) => (
                 <div
                   key={index}
-                  className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 space-y-3"
+                  className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-900/40 space-y-3"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400">
-                      Item #{index + 1}
+                    <span className="text-xs font-mono font-bold text-zinc-300">
+                      Shift Item #{index + 1}
                     </span>
                     {slotsToEdit.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveSlot(index)}
-                        className="text-rose-500 hover:text-rose-700 p-1"
+                        className="text-red-400 hover:text-red-300 p-1"
                         title="Remove"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -327,11 +326,11 @@ export default function BatchEditDialog({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     {/* Day */}
                     <div>
-                      <label className="text-[10px] font-semibold text-slate-500 block mb-1">Day</label>
+                      <label className="text-[10px] font-mono text-zinc-400 block mb-1">Day</label>
                       <select
                         value={slot.dayOfWeek}
                         onChange={(e) => handleSlotChange(index, 'dayOfWeek', e.target.value as DayOfWeek)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-semibold text-white"
                       >
                         {DAYS_OF_WEEK.map((d) => (
                           <option key={d} value={d}>
@@ -343,11 +342,11 @@ export default function BatchEditDialog({
 
                     {/* Period */}
                     <div>
-                      <label className="text-[10px] font-semibold text-slate-500 block mb-1">Period</label>
+                      <label className="text-[10px] font-mono text-zinc-400 block mb-1">Period</label>
                       <select
                         value={slot.periodNumber}
                         onChange={(e) => handleSlotChange(index, 'periodNumber', parseInt(e.target.value))}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-semibold text-white"
                       >
                         {PERIODS.map((p) => (
                           <option key={p.number} value={p.number}>
@@ -359,11 +358,11 @@ export default function BatchEditDialog({
 
                     {/* Course Code */}
                     <div className="col-span-2 sm:col-span-2">
-                      <label className="text-[10px] font-semibold text-slate-500 block mb-1">Subject / Course</label>
+                      <label className="text-[10px] font-mono text-zinc-400 block mb-1">Subject / Course</label>
                       <select
                         value={slot.courseCode}
                         onChange={(e) => handleSlotChange(index, 'courseCode', e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-semibold text-white"
                       >
                         {courses.map((c) => (
                           <option key={c.code} value={c.code}>
@@ -377,23 +376,23 @@ export default function BatchEditDialog({
                   {/* Venue & Staff */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <label className="text-[10px] font-semibold text-slate-500 block mb-1">Venue (e.g. Q301, Y202, *)</label>
+                      <label className="text-[10px] font-mono text-zinc-400 block mb-1">Venue (e.g. Q301, Y202, *)</label>
                       <input
                         type="text"
                         placeholder="e.g. Q301"
                         value={slot.venue}
                         onChange={(e) => handleSlotChange(index, 'venue', e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-semibold text-white"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-semibold text-slate-500 block mb-1">Staff Name</label>
+                      <label className="text-[10px] font-mono text-zinc-400 block mb-1">Staff Name</label>
                       <input
                         type="text"
                         placeholder="Faculty Name"
                         value={slot.staffName}
                         onChange={(e) => handleSlotChange(index, 'staffName', e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-semibold text-white"
                       />
                     </div>
                   </div>
@@ -402,19 +401,19 @@ export default function BatchEditDialog({
             </div>
           </div>
 
-          {/* Submit Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-white transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition disabled:opacity-50"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-zinc-950 hover:bg-zinc-200 shadow-xs transition disabled:opacity-50"
             >
               <Check className="h-4 w-4" />
               <span>{isSubmitting ? 'Saving...' : 'Save & Apply Changes'}</span>

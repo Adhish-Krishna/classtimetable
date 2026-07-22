@@ -101,38 +101,38 @@ export default function AdminRepDialog({ isOpen, onClose }: AdminRepDialogProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs font-sans">
+      <div className="relative w-full max-w-lg bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-800 p-6 text-zinc-100">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Class Reps Management</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <h2 className="text-base font-bold text-white">Class Reps Management</h2>
+              <p className="text-xs text-zinc-400">
                 Authorized Class Rep roll numbers who can edit timetable
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-900 transition"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+          <div className="mt-4 p-3 rounded-xl bg-red-950/40 border border-red-800/60 text-xs text-red-300 flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+          <div className="mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-xs text-emerald-300 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span>{successMsg}</span>
           </div>
@@ -145,11 +145,11 @@ export default function AdminRepDialog({ isOpen, onClose }: AdminRepDialogProps)
             placeholder="Enter Roll Number (e.g. 21AI001)"
             value={newRollNo}
             onChange={(e) => setNewRollNo(e.target.value)}
-            className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="flex-1 px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-xs font-mono font-semibold text-white focus:outline-none focus:ring-1 focus:ring-zinc-400"
           />
           <button
             type="submit"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-zinc-950 hover:bg-zinc-200 transition shadow-xs"
           >
             <UserPlus className="h-4 w-4" />
             <span>Add Rep</span>
@@ -158,39 +158,39 @@ export default function AdminRepDialog({ isOpen, onClose }: AdminRepDialogProps)
 
         {/* Allowed Reps List */}
         <div className="mt-5 space-y-2 max-h-[250px] overflow-y-auto pr-1">
-          <label className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">
+          <label className="text-[10px] font-mono uppercase text-zinc-400 tracking-wider block">
             Authorized Roll Numbers ({reps.length})
           </label>
 
           {isLoading ? (
-            <p className="text-xs text-slate-400 italic">Loading reps list...</p>
+            <p className="text-xs text-zinc-500 italic">Loading reps list...</p>
           ) : reps.length === 0 ? (
-            <p className="text-xs text-slate-400 italic py-2">No Class Rep roll numbers authorized yet.</p>
+            <p className="text-xs text-zinc-500 italic py-2">No Class Rep roll numbers authorized yet.</p>
           ) : (
             reps.map((rep) => (
               <div
                 key={rep._id}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 text-xs"
+                className="flex items-center justify-between p-2.5 rounded-xl border border-zinc-800 bg-zinc-900/60 text-xs"
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold font-mono text-slate-800 dark:text-slate-200">
+                  <span className="font-mono font-bold text-white">
                     {rep.rollNo}
                   </span>
 
                   {rep.isRegistered ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                      <CheckCircle2 className="h-3 w-3" /> Activated
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-400" /> Activated
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
-                      <Clock className="h-3 w-3" /> Pending Password Setup
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                      <Clock className="h-3 w-3 text-amber-400" /> Pending Password Setup
                     </span>
                   )}
                 </div>
 
                 <button
                   onClick={() => handleDeleteRep(rep.rollNo)}
-                  className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition"
+                  className="p-1 text-zinc-500 hover:text-red-400 transition"
                   title="Delete Rep"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function AdminRepDialog({ isOpen, onClose }: AdminRepDialogProps)
         <div className="mt-5 text-right">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-white transition"
           >
             Close
           </button>

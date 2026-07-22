@@ -3,6 +3,7 @@ import MasterSlot from './models/MasterSlot';
 import SlotOverride from './models/SlotOverride';
 import Course from './models/Course';
 import { DayOfWeek, INITIAL_COURSES, PERIODS } from './constants';
+import { getDayOfWeekIST, addDaysIST } from './date-utils';
 
 export interface ResolvedSlot {
   periodNumber: number;
@@ -27,18 +28,7 @@ export interface ResolvedSlot {
 export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride?: DayOfWeek) {
   await connectToDatabase();
 
-  const targetDate = new Date(dateStr);
-  const dayNames: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
-  
-  // Get day of week from dateStr (0 = Sun, 1 = Mon, ..., 5 = Fri, 6 = Sat)
-  const dayIndex = targetDate.getDay();
-  let dayOfWeek: DayOfWeek = 'MON';
-
-  if (dayOfWeekOverride && dayNames.includes(dayOfWeekOverride)) {
-    dayOfWeek = dayOfWeekOverride;
-  } else if (dayIndex >= 1 && dayIndex <= 5) {
-    dayOfWeek = dayNames[dayIndex - 1];
-  }
+  const dayOfWeek = dayOfWeekOverride || getDayOfWeekIST(dateStr);
 
   // Fetch Master Slots for this day
   const masterSlots = await MasterSlot.find({ dayOfWeek }).lean();
@@ -62,7 +52,6 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
   const dbCourses = await Course.find().lean();
   const courseMap: Record<string, { title: string; staffName: string; type: 'free' | 'lab' | 'theory' }> = {};
 
-  // Populate course map with initial fallback + DB records
   Object.values(INITIAL_COURSES).forEach((c) => {
     courseMap[c.code] = { title: c.title, staffName: c.staffName, type: c.type };
   });
@@ -71,7 +60,6 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
     courseMap[c.code] = { title: c.title, staffName: c.staffName, type: c.type };
   });
 
-  // Build resolved period array (1..12)
   const resolvedSlots: ResolvedSlot[] = PERIODS.map((period) => {
     const override = activeOverrides.find((o) => o.periodNumber === period.number);
 
@@ -124,13 +112,12 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
       };
     }
 
-    // Empty slot
     return {
       periodNumber: period.number,
       time: period.time,
       dayOfWeek,
       courseCode: '',
-      courseTitle: 'Free / Empty Slot',
+      courseTitle: 'Free Slot',
       staffName: '',
       venue: '',
       type: 'free' as const,
@@ -155,21 +142,16 @@ export async function resolveFullWeeklyGrid(dateStr: string) {
     FRI: [],
   };
 
-  // Find Monday of the current week for dateStr
-  const targetDate = new Date(dateStr);
-  const dayIndex = targetDate.getDay(); // 0 = Sun
-  const diffToMon = dayIndex === 0 ? -6 : 1 - dayIndex;
-  
-  const mondayDate = new Date(targetDate);
-  mondayDate.setDate(targetDate.getDate() + diffToMon);
+  // Find Monday of the current week for dateStr in IST
+  const targetDay = getDayOfWeekIST(dateStr);
+  const dayIndexMap: Record<DayOfWeek, number> = { MON: 0, TUE: 1, WED: 2, THU: 3, FRI: 4 };
+  const targetIndex = dayIndexMap[targetDay] || 0;
 
   for (let i = 0; i < 5; i++) {
-    const d = new Date(mondayDate);
-    d.setDate(mondayDate.getDate() + i);
-    const formattedDate = d.toISOString().split('T')[0];
+    const offset = i - targetIndex;
+    const calcDate = addDaysIST(dateStr, offset);
     const dayName = dayNames[i];
-    
-    const dayRes = await resolveTimetableForDate(formattedDate, dayName);
+    const dayRes = await resolveTimetableForDate(calcDate, dayName);
     grid[dayName] = dayRes.slots;
   }
 
