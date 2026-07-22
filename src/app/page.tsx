@@ -34,12 +34,10 @@ export default function HomePage() {
   const [dragSourceSlot, setDragSourceSlot] = useState<ResolvedSlot | null>(null);
   const [dragTargetSlot, setDragTargetSlot] = useState<ResolvedSlot | null>(null);
 
-  // Set IST Date on mount
   useEffect(() => {
     setSelectedDate(getTodayIST());
   }, []);
 
-  // Initialize seed, user profile, and course catalog
   useEffect(() => {
     fetch('/api/seed').catch(() => {});
 
@@ -58,7 +56,6 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
-  // Fetch timetable data for selectedDate
   const loadTimetable = useCallback(async () => {
     if (!selectedDate) return;
 
@@ -123,31 +120,8 @@ export default function HomePage() {
         onOpenBatchEdit={handleOpenNewBatchEdit}
       />
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Banner for Class Reps & Admins */}
-        {canEdit && (
-          <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-white shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="space-y-0.5 text-center sm:text-left">
-              <div className="flex items-center gap-2 justify-center sm:justify-start">
-                <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">
-                  {user?.role.toUpperCase()}: {user?.username}
-                </span>
-                <span className="text-xs text-zinc-400 font-semibold">Rep Shift Mode Active</span>
-              </div>
-              <p className="text-xs text-zinc-400">
-                Drag & drop any period card below or click &quot;Batch Shift&quot; to swap or reassign classes.
-              </p>
-            </div>
-            <button
-              onClick={handleOpenNewBatchEdit}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-zinc-950 hover:bg-zinc-200 transition shrink-0"
-            >
-              Batch Shift / Edit
-            </button>
-          </div>
-        )}
-
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Timetable Interactive Grid */}
         <TimetableGrid
           singleDayData={singleDayData}
@@ -159,13 +133,13 @@ export default function HomePage() {
           onDateChange={setSelectedDate}
         />
 
-        {/* Course Catalog Legend */}
+        {/* Collapsible Course Legend */}
         <CourseLegend />
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-900 bg-zinc-950 py-6 text-center text-xs text-zinc-500">
-        <p>BE CSE (AI & ML) Semester 7 • Digital Timetable Platform (IST)</p>
+      <footer className="border-t border-zinc-900 bg-zinc-950 py-4 text-center text-xs text-zinc-500 font-mono">
+        <p>BE CSE (AI & ML) Sem 7 • Digital Timetable (IST)</p>
       </footer>
 
       {/* Modals & Dialogs */}

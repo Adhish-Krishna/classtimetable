@@ -5,7 +5,7 @@ import { ResolvedSlot } from '@/lib/timetable-resolver';
 import { DayOfWeek, DAYS_OF_WEEK, PERIODS } from '@/lib/constants';
 import { formatDateDisplayIST, addDaysIST } from '@/lib/date-utils';
 import SlotCard from './SlotCard';
-import { Grid, ListFilter, ChevronLeft, ChevronRight, Info, ArrowRightLeft, Sparkles } from 'lucide-react';
+import { Grid, ListFilter, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface TimetableGridProps {
   singleDayData?: {
@@ -35,10 +35,7 @@ export default function TimetableGrid({
     singleDayData?.dayOfWeek || 'MON'
   );
 
-  // Drag & drop state
   const [draggedSlot, setDraggedSlot] = useState<ResolvedSlot | null>(null);
-  
-  // Touch / Tap-to-Swap fallback state
   const [selectedForSwap, setSelectedForSwap] = useState<ResolvedSlot | null>(null);
 
   const handleDateStep = (days: number) => {
@@ -63,31 +60,30 @@ export default function TimetableGrid({
     if (!selectedForSwap) {
       setSelectedForSwap(slot);
     } else if (selectedForSwap.periodNumber === slot.periodNumber && selectedForSwap.dayOfWeek === slot.dayOfWeek) {
-      setSelectedForSwap(null); // Deselect if tapped twice
+      setSelectedForSwap(null);
     } else {
-      // Trigger swap between selectedForSwap and slot
       onDragDropShift(selectedForSwap, slot);
       setSelectedForSwap(null);
     }
   };
 
   return (
-    <div className="space-y-5">
-      {/* Date Header & View Switcher Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800 shadow-xs">
-        {/* Date Selector & Navigation */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
+    <div className="space-y-4">
+      {/* Sleek Date Header & View Switcher Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-800">
+        {/* Date Selector */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
             <button
               onClick={() => handleDateStep(-1)}
-              className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
               title="Previous Day"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => handleDateStep(1)}
-              className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition"
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
               title="Next Day"
             >
               <ChevronRight className="h-4 w-4" />
@@ -95,12 +91,9 @@ export default function TimetableGrid({
           </div>
 
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+            <h2 className="text-sm font-bold text-white tracking-tight">
               {formatDateDisplayIST(selectedDate)}
             </h2>
-            <p className="text-[11px] font-mono text-zinc-400">
-              Active Schedule Mode: <span className="text-zinc-200 uppercase font-semibold">{singleDayData?.dayOfWeek || activeMobileDay}</span>
-            </p>
           </div>
         </div>
 
@@ -131,47 +124,21 @@ export default function TimetableGrid({
         </div>
       </div>
 
-      {/* Drag & Swap Help Hint for Reps */}
-      {canEdit && (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-zinc-900/40 border border-zinc-800 text-xs text-zinc-400">
-          <div className="flex items-center gap-2">
-            <ArrowRightLeft className="h-4 w-4 text-amber-400 shrink-0" />
-            <span>
-              {selectedForSwap ? (
-                <strong className="text-amber-300">
-                  Tap target slot to swap with Period {selectedForSwap.periodNumber} ({selectedForSwap.courseCode || 'Free'})
-                </strong>
-              ) : (
-                'Drag any period card onto another slot to swap classes (or tap a slot to select it).'
-              )}
-            </span>
-          </div>
-          {selectedForSwap && (
-            <button
-              onClick={() => setSelectedForSwap(null)}
-              className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
-            >
-              Cancel Swap
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Mode 1: Daily View (Mobile Optimized Tabs & Grid) */}
       {viewMode === 'day' && (
         <div>
           {/* Day Tabs selector */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none">
             {DAYS_OF_WEEK.map((day) => {
               const isActive = (singleDayData?.dayOfWeek || activeMobileDay) === day;
               return (
                 <button
                   key={day}
                   onClick={() => setActiveMobileDay(day)}
-                  className={`flex-1 min-w-[65px] py-2 px-3 rounded-xl text-xs font-mono font-bold transition text-center border ${
+                  className={`flex-1 min-w-[65px] py-1.5 px-3 rounded-xl text-xs font-mono font-bold transition text-center border ${
                     isActive
                       ? 'bg-white text-zinc-950 border-white shadow-xs'
-                      : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800/80 hover:text-zinc-200'
+                      : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:bg-zinc-800/80 hover:text-zinc-200'
                   }`}
                 >
                   {day}
@@ -180,7 +147,7 @@ export default function TimetableGrid({
             })}
           </div>
 
-          {/* Slots List for Active Day */}
+          {/* Slots List */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {(singleDayData?.slots || (weeklyGridData && weeklyGridData[activeMobileDay]) || []).map((slot) => (
               <SlotCard
@@ -242,7 +209,7 @@ export default function TimetableGrid({
                           />
                         ) : (
                           <div className="h-full min-h-[50px] rounded-lg border border-dashed border-zinc-800 flex items-center justify-center text-zinc-600 text-[10px]">
-                            Free
+                            Empty
                           </div>
                         )}
                       </td>
@@ -254,26 +221,6 @@ export default function TimetableGrid({
           </table>
         </div>
       )}
-
-      {/* Footer Info */}
-      <div className="flex flex-wrap items-center gap-4 p-3 bg-zinc-900/60 border border-zinc-800 rounded-xl text-xs text-zinc-400">
-        <div className="flex items-center gap-1.5 font-bold text-zinc-200">
-          <Info className="h-4 w-4 text-zinc-400" />
-          <span>Legend:</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-          <span>Free Periods</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
-          <span>Lab / Project</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-          <span>Temporary Override Active</span>
-        </div>
-      </div>
     </div>
   );
 }

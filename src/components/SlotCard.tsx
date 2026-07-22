@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { ResolvedSlot } from '@/lib/timetable-resolver';
-import { INITIAL_COURSES } from '@/lib/constants';
 import { MapPin, User as UserIcon, Clock, Edit2, AlertCircle, GripVertical } from 'lucide-react';
 
 interface SlotCardProps {
@@ -26,21 +25,54 @@ export default function SlotCard({
   onSelectForSwap,
   compact = false,
 }: SlotCardProps) {
-  const courseCode = slot.courseCode.trim().toUpperCase();
+  const courseCode = (slot.courseCode || '').trim().toUpperCase();
 
-  const coursePreset = INITIAL_COURSES[courseCode];
-  const isFree = slot.type === 'free' || courseCode === 'LIB' || courseCode === 'TWM' || !courseCode;
-  const isLab = slot.type === 'lab' || courseCode === '23N710' || courseCode === '23N711';
+  const isEmpty = !courseCode;
+  const isFree = courseCode === 'LIB' || courseCode === 'TWM';
+  const isLab = courseCode === '23N710' || courseCode === '23N711';
 
-  // Minimal theme fallback with specific period highlight colors
-  let highlightStyles = 'border-zinc-800/80 bg-zinc-900/60 text-zinc-100 hover:border-zinc-700';
+  // Completely distinct color families for every subject
+  let cardStyles = 'bg-zinc-900/40 border-zinc-800 text-zinc-500 hover:border-zinc-700';
+  let badgeStyles = 'bg-zinc-800 text-zinc-400 border-zinc-700';
 
-  if (isFree) {
-    highlightStyles = 'border-emerald-900/50 bg-emerald-950/20 text-emerald-100 hover:border-emerald-700/60';
+  if (isEmpty) {
+    // Empty Slot -> Grey
+    cardStyles = 'bg-zinc-900/40 border-zinc-800 text-zinc-500 hover:border-zinc-700';
+  } else if (isFree) {
+    // Free Periods -> Emerald Green
+    cardStyles = 'bg-emerald-950/30 border-emerald-800/80 text-emerald-300 hover:border-emerald-700';
+    badgeStyles = 'bg-emerald-900/60 text-emerald-300 border-emerald-700/60';
   } else if (isLab) {
-    highlightStyles = 'border-rose-900/50 bg-rose-950/20 text-rose-100 hover:border-rose-700/60';
-  } else if (coursePreset?.colorTheme) {
-    highlightStyles = 'border-zinc-800 bg-zinc-900/80 text-zinc-100 hover:border-zinc-700';
+    // Labs -> Rose Red
+    cardStyles = 'bg-rose-950/30 border-rose-800/80 text-rose-300 hover:border-rose-700';
+    badgeStyles = 'bg-rose-900/60 text-rose-300 border-rose-700/60';
+  } else if (courseCode === '23N003') {
+    // Recommender Systems -> Indigo
+    cardStyles = 'bg-indigo-950/30 border-indigo-800/80 text-indigo-300 hover:border-indigo-700';
+    badgeStyles = 'bg-indigo-900/60 text-indigo-300 border-indigo-700/60';
+  } else if (courseCode === '23N014') {
+    // Cloud Computing -> Sky Blue
+    cardStyles = 'bg-sky-950/30 border-sky-800/80 text-sky-300 hover:border-sky-700';
+    badgeStyles = 'bg-sky-900/60 text-sky-300 border-sky-700/60';
+  } else if (courseCode === '23N017') {
+    // Computer Vision -> Purple
+    cardStyles = 'bg-purple-950/30 border-purple-800/80 text-purple-300 hover:border-purple-700';
+    badgeStyles = 'bg-purple-900/60 text-purple-300 border-purple-700/60';
+  } else if (courseCode === '23N020') {
+    // Generative AI -> Amber / Yellow
+    cardStyles = 'bg-amber-950/30 border-amber-800/80 text-amber-300 hover:border-amber-700';
+    badgeStyles = 'bg-amber-900/60 text-amber-300 border-amber-700/60';
+  } else if (courseCode === '23N701') {
+    // Big Data & Adv DB -> Fuchsia / Magenta
+    cardStyles = 'bg-fuchsia-950/30 border-fuchsia-800/80 text-fuchsia-300 hover:border-fuchsia-700';
+    badgeStyles = 'bg-fuchsia-900/60 text-fuchsia-300 border-fuchsia-700/60';
+  } else if (courseCode === '23N002') {
+    // Design Thinking -> Orange
+    cardStyles = 'bg-orange-950/30 border-orange-800/80 text-orange-300 hover:border-orange-700';
+    badgeStyles = 'bg-orange-900/60 text-orange-300 border-orange-700/60';
+  } else {
+    cardStyles = 'bg-zinc-900/80 border-zinc-800 text-zinc-200 hover:border-zinc-700';
+    badgeStyles = 'bg-zinc-800 text-zinc-300 border-zinc-700';
   }
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -70,22 +102,22 @@ export default function SlotCard({
       }}
       className={`group relative rounded-xl p-3 border transition-all duration-150 flex flex-col justify-between select-none ${
         canEdit ? 'cursor-grab active:cursor-grabbing' : ''
-      } ${highlightStyles} ${
-        slot.isOverride ? 'ring-1 ring-amber-400/80 border-amber-500/50' : ''
+      } ${cardStyles} ${
+        slot.isOverride ? 'ring-2 ring-amber-400/90 border-amber-400' : ''
       } ${
-        isSelectedForSwap ? 'ring-2 ring-indigo-500 bg-indigo-950/40 border-indigo-500' : ''
+        isSelectedForSwap ? 'ring-2 ring-white bg-zinc-800 border-white' : ''
       }`}
     >
       {/* Top Header */}
       <div className="flex items-center justify-between gap-1 mb-1.5">
         <div className="flex items-center gap-1.5">
           {canEdit && (
-            <GripVertical className="h-3.5 w-3.5 text-zinc-600 group-hover:text-zinc-300 transition" />
+            <GripVertical className="h-3.5 w-3.5 text-zinc-500 opacity-60 group-hover:opacity-100 transition" />
           )}
-          <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-950/60 border border-zinc-800 text-zinc-300">
             P{slot.periodNumber}
           </span>
-          <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1">
+          <span className="text-[10px] font-mono text-zinc-400 flex items-center gap-1">
             <Clock className="h-3 w-3 inline text-zinc-500" />
             {slot.time}
           </span>
@@ -94,7 +126,7 @@ export default function SlotCard({
         {/* Badges & Edit Trigger */}
         <div className="flex items-center gap-1">
           {slot.isOverride && (
-            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            <span className="inline-flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500 text-zinc-950">
               <AlertCircle className="h-3 w-3" />
               Temp
             </span>
@@ -106,7 +138,7 @@ export default function SlotCard({
                 e.stopPropagation();
                 onEditSlot(slot);
               }}
-              className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+              className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition opacity-80 group-hover:opacity-100"
               title="Edit Slot"
             >
               <Edit2 className="h-3 w-3" />
@@ -117,38 +149,38 @@ export default function SlotCard({
 
       {/* Main Content */}
       <div className="my-1">
-        {courseCode ? (
+        {!isEmpty ? (
           <div>
             <div className="flex items-baseline justify-between gap-1">
               <h3 className="font-extrabold text-sm sm:text-base tracking-tight text-white">
                 {courseCode}
               </h3>
               {isFree && (
-                <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/60">
+                <span className={`text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded border ${badgeStyles}`}>
                   Free
                 </span>
               )}
               {isLab && (
-                <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-800/60">
+                <span className={`text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 rounded border ${badgeStyles}`}>
                   Lab
                 </span>
               )}
             </div>
             {!compact && (
-              <p className="text-xs text-zinc-400 font-medium line-clamp-1 mt-0.5">
+              <p className="text-xs text-zinc-300 font-medium line-clamp-1 mt-0.5">
                 {slot.courseTitle}
               </p>
             )}
           </div>
         ) : (
-          <p className="text-xs text-zinc-500 italic font-medium">Free Slot</p>
+          <p className="text-xs text-zinc-500 italic font-medium">Empty Slot</p>
         )}
       </div>
 
       {/* Footer */}
       <div className="mt-2 pt-1.5 border-t border-zinc-800/60 flex items-center justify-between text-[11px] text-zinc-400 gap-2">
         {slot.venue ? (
-          <span className="font-mono font-medium text-zinc-300 flex items-center gap-1 bg-zinc-800/60 px-1.5 py-0.5 rounded">
+          <span className="font-mono font-medium text-zinc-300 flex items-center gap-1 bg-zinc-950/60 border border-zinc-800 px-1.5 py-0.5 rounded">
             <MapPin className="h-3 w-3 text-zinc-400" />
             {slot.venue}
           </span>
