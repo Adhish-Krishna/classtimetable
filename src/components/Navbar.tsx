@@ -23,28 +23,21 @@ export default function Navbar({
 }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-        {/* Minimal Branding */}
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white shadow-xs">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-2">
+        {/* Branding - Cleaned for mobile: Title hidden on mobile, AIML badge removed */}
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white shadow-xs shrink-0">
             <Calendar className="h-4 w-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-white tracking-tight">
-                Class Timetable
-              </h1>
-              <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
-                CSE AI&ML
-              </span>
-            </div>
-          </div>
+          <h1 className="text-sm font-bold text-white tracking-tight hidden sm:block">
+            Class Timetable
+          </h1>
         </div>
 
-        {/* Action Controls & User info */}
-        <div className="flex items-center gap-2">
+        {/* Date Selector & Action Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* IST Date Picker */}
-          <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg text-xs">
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg text-xs">
             <input
               type="date"
               value={selectedDate}
@@ -62,7 +55,7 @@ export default function Navbar({
                 ) : (
                   <User className="h-3.5 w-3.5 text-zinc-400" />
                 )}
-                <span>{user.username}</span>
+                <span className="font-mono text-xs">{user.username}</span>
               </div>
 
               {/* Admin Manage Reps */}
