@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import connectToDatabase from './db';
 import MasterSlot from './models/MasterSlot';
 import SlotOverride from './models/SlotOverride';
@@ -26,16 +27,8 @@ export interface ResolvedSlot {
   };
 }
 
-export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride?: DayOfWeek) {
-  const dayOfWeek = dayOfWeekOverride || getDayOfWeekIST(dateStr);
-  const cacheKey = `tt:single:${dateStr}:${dayOfWeek}`;
-
-  // 1. Check in-memory cache
-  const cached = getCache<{ date: string; dayOfWeek: DayOfWeek; slots: ResolvedSlot[] }>(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
+// Database fetcher function
+async function fetchTimetableFromDb(dateStr: string, dayOfWeek: DayOfWeek) {
   await connectToDatabase();
 
   // Fetch Master Slots for this day
@@ -135,13 +128,37 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
     };
   });
 
-  const result = {
+  return {
     date: dateStr,
     dayOfWeek,
     slots: resolvedSlots,
   };
+}
 
-  // 2. Save in cache (5 minutes TTL)
+// Wrap with Next.js Native Data Cache (unstable_cache) for Vercel edge/serverless persistence
+const getVercelCachedTimetable = unstable_cache(
+  async (dateStr: string, dayOfWeek: DayOfWeek) => fetchTimetableFromDb(dateStr, dayOfWeek),
+  ['resolve-timetable-date'],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ['timetable'],
+  }
+);
+
+export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride?: DayOfWeek) {
+  const dayOfWeek = dayOfWeekOverride || getDayOfWeekIST(dateStr);
+  const cacheKey = `tt:single:${dateStr}:${dayOfWeek}`;
+
+  // Layer 1: In-Memory Map Cache (Sub-millisecond hit on active container)
+  const cached = getCache<{ date: string; dayOfWeek: DayOfWeek; slots: ResolvedSlot[] }>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  // Layer 2: Next.js Native Data Cache (Persisted across Vercel serverless instances)
+  const result = await getVercelCachedTimetable(dateStr, dayOfWeek);
+
+  // Store in Layer 1 for instant access
   setCache(cacheKey, result, 300);
 
   return result;
@@ -150,7 +167,6 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
 export async function resolveFullWeeklyGrid(dateStr: string) {
   const cacheKey = `tt:week:${dateStr}`;
 
-  // 1. Check in-memory cache
   const cached = getCache<Record<DayOfWeek, ResolvedSlot[]>>(cacheKey);
   if (cached) {
     return cached;
@@ -177,7 +193,6 @@ export async function resolveFullWeeklyGrid(dateStr: string) {
     grid[dayName] = dayRes.slots;
   }
 
-  // 2. Save in cache (5 minutes TTL)
   setCache(cacheKey, grid, 300);
 
   return grid;

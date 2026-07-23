@@ -1,3 +1,5 @@
+import { revalidateTag, revalidatePath } from 'next/cache';
+
 interface CacheEntry<T> {
   data: T;
   expiresAt: number;
@@ -26,7 +28,6 @@ class InMemoryCache {
   set<T>(key: string, data: T, ttlSeconds: number = 300): void {
     const expiresAt = Date.now() + ttlSeconds * 1000;
 
-    // Enforce memory limit: if cache exceeds maxEntries, evict oldest entry
     if (this.store.size >= this.maxEntries && !this.store.has(key)) {
       const oldestKey = this.store.keys().next().value;
       if (oldestKey) {
@@ -50,7 +51,6 @@ class InMemoryCache {
   }
 }
 
-// Global cache instance across hot reloads in development
 declare global {
   // eslint-disable-next-line no-var
   var globalCache: InMemoryCache | undefined;
@@ -70,5 +70,14 @@ export function setCache<T>(key: string, data: T, ttlSeconds?: number): void {
 }
 
 export function invalidateTimetableCache(): void {
+  // 1. Purge local in-memory Map
   cache.invalidateByPrefix('tt:');
+
+  // 2. Purge Vercel / Next.js global Data Cache across all serverless nodes
+  try {
+    revalidateTag('timetable', 'max');
+    revalidatePath('/', 'layout');
+  } catch (e) {
+    // Ignore error if invoked outside request context
+  }
 }
