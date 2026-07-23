@@ -40,8 +40,10 @@ export default function TimetableGrid({
   const [draggedSlot, setDraggedSlot] = useState<ResolvedSlot | null>(null);
   const [selectedForSwap, setSelectedForSwap] = useState<ResolvedSlot | null>(null);
 
-  const handleDateStep = (days: number) => {
-    const newDate = addDaysIST(selectedDate, days);
+  // In Daily View: Navigate by 1 Day. In Weekly Matrix View: Navigate by 7 Days (1 Week).
+  const handleDateStep = (direction: number) => {
+    const stepAmount = viewMode === 'week' ? 7 : 1;
+    const newDate = addDaysIST(selectedDate, direction * stepAmount);
     onDateChange(newDate);
   };
 
@@ -73,20 +75,20 @@ export default function TimetableGrid({
     <div className="space-y-4 font-sans">
       {/* Sleek Date Header & View Switcher Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-800">
-        {/* Date Selector */}
+        {/* Date Selector & Navigation */}
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
             <button
               onClick={() => handleDateStep(-1)}
-              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
-              title="Previous Day"
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition flex items-center justify-center"
+              title={viewMode === 'week' ? 'Previous Week' : 'Previous Day'}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => handleDateStep(1)}
-              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
-              title="Next Day"
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition flex items-center justify-center"
+              title={viewMode === 'week' ? 'Next Week' : 'Next Day'}
             >
               <ChevronRight className="h-4 w-4" />
             </button>
