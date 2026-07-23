@@ -4,6 +4,7 @@ import MasterSlot from '@/lib/models/MasterSlot';
 import SlotOverride, { RecurrenceType } from '@/lib/models/SlotOverride';
 import { getAuthUser } from '@/lib/auth';
 import { DayOfWeek } from '@/lib/constants';
+import { invalidateTimetableCache } from '@/lib/cache';
 
 interface SlotEditPayload {
   dayOfWeek: DayOfWeek;
@@ -44,7 +45,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (isPermanent) {
-      // Update Master Slots directly and clean up existing temporary overrides for these slots
       for (const slot of slots) {
         await MasterSlot.findOneAndUpdate(
           { dayOfWeek: slot.dayOfWeek, periodNumber: slot.periodNumber },
@@ -58,12 +58,14 @@ export async function POST(req: NextRequest) {
           { upsert: true, new: true }
         );
 
-        // Delete active temporary overrides for this master slot
         await SlotOverride.deleteMany({
           dayOfWeek: slot.dayOfWeek,
           periodNumber: slot.periodNumber,
         });
       }
+
+      // Invalidate timetable in-memory cache
+      invalidateTimetableCache();
 
       return NextResponse.json({
         success: true,
@@ -71,7 +73,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Temporary or Recurring Override
     if (recurrenceType === 'single_date' && !specificDate) {
       return NextResponse.json({ error: 'Specific date is required for single date overrides.' }, { status: 400 });
     }
@@ -83,7 +84,6 @@ export async function POST(req: NextRequest) {
     const batchId = `batch_${Date.now()}`;
 
     for (const slot of slots) {
-      // Delete existing temporary overrides for this exact day & period on specificDate or date range
       if (recurrenceType === 'single_date') {
         await SlotOverride.deleteMany({
           dayOfWeek: slot.dayOfWeek,
@@ -101,7 +101,6 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Create new fresh override
       await SlotOverride.create({
         dayOfWeek: slot.dayOfWeek,
         periodNumber: slot.periodNumber,
@@ -117,6 +116,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Invalidate timetable in-memory cache
+    invalidateTimetableCache();
+
     return NextResponse.json({
       success: true,
       message: `Successfully updated ${slots.length} temporary/recurring slot override(s).`,
@@ -128,7 +130,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE an override by ID or batchId
 export async function DELETE(req: NextRequest) {
   try {
     const authUser = await getAuthUser();
@@ -143,11 +144,13 @@ export async function DELETE(req: NextRequest) {
 
     if (batchId) {
       await SlotOverride.deleteMany({ batchId });
+      invalidateTimetableCache();
       return NextResponse.json({ success: true, message: 'Batch overrides removed.' });
     }
 
     if (overrideId) {
       await SlotOverride.findByIdAndDelete(overrideId);
+      invalidateTimetableCache();
       return NextResponse.json({ success: true, message: 'Slot override removed.' });
     }
 

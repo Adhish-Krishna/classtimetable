@@ -4,6 +4,7 @@ import SlotOverride from './models/SlotOverride';
 import Course from './models/Course';
 import { DayOfWeek, INITIAL_COURSES, PERIODS } from './constants';
 import { getDayOfWeekIST, addDaysIST } from './date-utils';
+import { getCache, setCache } from './cache';
 
 export interface ResolvedSlot {
   periodNumber: number;
@@ -26,9 +27,16 @@ export interface ResolvedSlot {
 }
 
 export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride?: DayOfWeek) {
-  await connectToDatabase();
-
   const dayOfWeek = dayOfWeekOverride || getDayOfWeekIST(dateStr);
+  const cacheKey = `tt:single:${dateStr}:${dayOfWeek}`;
+
+  // 1. Check in-memory cache
+  const cached = getCache<{ date: string; dayOfWeek: DayOfWeek; slots: ResolvedSlot[] }>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  await connectToDatabase();
 
   // Fetch Master Slots for this day
   const masterSlots = await MasterSlot.find({ dayOfWeek }).lean();
@@ -48,7 +56,7 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
     return false;
   });
 
-  // Fetch courses catalog to resolve course details
+  // Fetch courses catalog
   const dbCourses = await Course.find().lean();
   const courseMap: Record<string, { title: string; staffName: string; type: 'free' | 'lab' | 'theory' }> = {};
 
@@ -61,7 +69,6 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
   });
 
   const resolvedSlots: ResolvedSlot[] = PERIODS.map((period) => {
-    // Pick the most recent active override for this period
     const override = activeOverrides.find((o) => o.periodNumber === period.number);
 
     if (override) {
@@ -128,14 +135,27 @@ export async function resolveTimetableForDate(dateStr: string, dayOfWeekOverride
     };
   });
 
-  return {
+  const result = {
     date: dateStr,
     dayOfWeek,
     slots: resolvedSlots,
   };
+
+  // 2. Save in cache (5 minutes TTL)
+  setCache(cacheKey, result, 300);
+
+  return result;
 }
 
 export async function resolveFullWeeklyGrid(dateStr: string) {
+  const cacheKey = `tt:week:${dateStr}`;
+
+  // 1. Check in-memory cache
+  const cached = getCache<Record<DayOfWeek, ResolvedSlot[]>>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const dayNames: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
   const grid: Record<DayOfWeek, ResolvedSlot[]> = {
     MON: [],
@@ -156,6 +176,9 @@ export async function resolveFullWeeklyGrid(dateStr: string) {
     const dayRes = await resolveTimetableForDate(calcDate, dayName);
     grid[dayName] = dayRes.slots;
   }
+
+  // 2. Save in cache (5 minutes TTL)
+  setCache(cacheKey, grid, 300);
 
   return grid;
 }
